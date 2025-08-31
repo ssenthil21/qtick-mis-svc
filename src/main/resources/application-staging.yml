@@ -1,0 +1,73 @@
+spring:
+  # MySQL Configuration for Staging
+  datasource:
+    url: ${DB_URL:jdbc:mysql://staging-mysql:3306/qtick_staging?useSSL=true&serverTimezone=Asia/Singapore}
+    username: ${DB_USERNAME:qtick_user}
+    password: ${DB_PASSWORD:qtick_password}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 10
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      leak-detection-threshold: 60000
+  
+  # MongoDB Configuration for Staging
+  data:
+    mongodb:
+      uri: ${MONGO_URI:mongodb://staging-mongo:27017/qtick_staging}
+      auto-index-creation: false
+  
+  # JPA Configuration for Staging
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+        generate_statistics: true
+  
+  # Security Configuration for Staging
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: ${JWT_JWK_SET_URI:https://staging-auth.qtick.com/.well-known/jwks.json}
+          issuer-uri: ${JWT_ISSUER_URI:https://staging-auth.qtick.com}
+
+# Logging Configuration for Staging
+logging:
+  level:
+    com.qtick.mis: INFO
+    org.springframework.security: WARN
+    org.hibernate.SQL: WARN
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level [%X{correlationId}] %logger{36} - %msg%n"
+  file:
+    name: /var/log/qtick-mis-backend.log
+
+# Management Configuration for Staging
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when-authorized
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+        step: 30s
+
+# Cache Configuration
+spring.cache:
+  type: redis
+  redis:
+    host: ${REDIS_HOST:staging-redis}
+    port: ${REDIS_PORT:6379}
+    password: ${REDIS_PASSWORD:}
+    timeout: 2000ms

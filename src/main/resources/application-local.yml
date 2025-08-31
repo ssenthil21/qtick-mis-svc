@@ -1,0 +1,52 @@
+spring:
+  # MySQL Configuration for Local Development
+  datasource:
+    url: jdbc:mysql://localhost:3306/qtick_local?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Singapore
+    username: qtick_user
+    password: qtick_password
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      connection-timeout: 20000
+      idle-timeout: 300000
+      max-lifetime: 1200000
+  
+  # MongoDB Configuration for Local Development
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/qtick_local
+      auto-index-creation: true
+  
+  # JPA Configuration for Local Development
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+  
+  # Security Configuration for Local Development
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # Local JWT configuration - replace with actual JWKS URI
+          jwk-set-uri: http://localhost:8080/.well-known/jwks.json
+          # For local development, you might want to use a simpler setup
+          # issuer-uri: http://localhost:8080
+
+# Logging Configuration for Local Development
+logging:
+  level:
+    com.qtick.mis: DEBUG
+    org.springframework.security: DEBUG
+    org.springframework.web: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+# Development-specific settings
+debug: false
