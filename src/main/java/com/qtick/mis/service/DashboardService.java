@@ -21,6 +21,7 @@ import com.qtick.mis.security.TenantContextHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -33,8 +34,14 @@ import java.util.Optional;
 
 @Service
 public class DashboardService {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(DashboardService.class);
+
+    @Value("${app.use-mock-data:false}")
+    private boolean useMockData;
+
+    @Autowired
+    private MockDashboardService mockDashboardService;
     
     @Autowired
     private DashboardSnapshotRepository snapshotRepository;
@@ -60,8 +67,11 @@ public class DashboardService {
     /**
      * Get dashboard summary with KPI calculations and comparison logic
      */
-    public DashboardSummaryDto getSummary(LocalDate startDate, LocalDate endDate, 
+    public DashboardSummaryDto getSummary(LocalDate startDate, LocalDate endDate,
                                          LocalDate comparisonStartDate, LocalDate comparisonEndDate) {
+        if (useMockData) {
+            return mockDashboardService.getSummary(startDate, endDate, comparisonStartDate, comparisonEndDate);
+        }
         TenantContext context = TenantContextHolder.getContext();
         Long bizId = context.getBizId();
         
@@ -100,6 +110,9 @@ public class DashboardService {
      * Get trend data with time series data aggregation
      */
     public List<TrendDataDto> getTrends(String metric, LocalDate startDate, LocalDate endDate, String period) {
+        if (useMockData) {
+            return mockDashboardService.getTrends(metric, startDate, endDate, period);
+        }
         TenantContext context = TenantContextHolder.getContext();
         Long bizId = context.getBizId();
         
@@ -155,8 +168,11 @@ public class DashboardService {
     /**
      * Get top services with ranking algorithms
      */
-    public List<TopServiceDto> getTopServices(LocalDate startDate, LocalDate endDate, 
+    public List<TopServiceDto> getTopServices(LocalDate startDate, LocalDate endDate,
                                             String sortBy, Integer limit) {
+        if (useMockData) {
+            return mockDashboardService.getTopServices(startDate, endDate, sortBy, limit);
+        }
         TenantContext context = TenantContextHolder.getContext();
         Long bizId = context.getBizId();
         
@@ -197,8 +213,11 @@ public class DashboardService {
     /**
      * Get top staff with performance metrics
      */
-    public List<TopStaffDto> getTopStaff(LocalDate startDate, LocalDate endDate, 
+    public List<TopStaffDto> getTopStaff(LocalDate startDate, LocalDate endDate,
                                        String sortBy, Integer limit) {
+        if (useMockData) {
+            return mockDashboardService.getTopStaff(startDate, endDate, sortBy, limit);
+        }
         TenantContext context = TenantContextHolder.getContext();
         Long bizId = context.getBizId();
         
@@ -229,6 +248,9 @@ public class DashboardService {
      * Get business details with daily job statistics
      */
     public List<BusinessDetailsDto> getBusinessDetails(String businessType, LocalDate date) {
+        if (useMockData) {
+            return mockDashboardService.getBusinessDetails(businessType, date);
+        }
         TenantContext context = TenantContextHolder.getContext();
         Long bizId = context.getBizId();
         
@@ -261,6 +283,9 @@ public class DashboardService {
     }
 
     public BusinessViewCountDto getBusinessViewCount(LocalDate startDate, LocalDate endDate) {
+        if (useMockData) {
+            return mockDashboardService.getBusinessViewCount(startDate, endDate);
+        }
         TenantContext context = TenantContextHolder.getContext();
         Long bizId = context.getBizId();
 
