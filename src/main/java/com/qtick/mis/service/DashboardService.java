@@ -3,6 +3,7 @@ package com.qtick.mis.service;
 import com.qtick.mis.dto.dashboard.BusinessDetailsDto;
 import com.qtick.mis.dto.dashboard.DailyJobStatsDto;
 import com.qtick.mis.dto.dashboard.DashboardSummaryDto;
+import com.qtick.mis.dto.dashboard.BusinessViewCountDto;
 import com.qtick.mis.dto.dashboard.ServiceBreakdownDto;
 import com.qtick.mis.dto.dashboard.TopServiceDto;
 import com.qtick.mis.dto.dashboard.TopStaffDto;
@@ -13,6 +14,7 @@ import com.qtick.mis.repository.jpa.AppointmentRepository;
 import com.qtick.mis.repository.jpa.BillRepository;
 import com.qtick.mis.repository.jpa.ClientRepository;
 import com.qtick.mis.repository.jpa.EnquiryRepository;
+import com.qtick.mis.repository.jpa.DayQReportRepository;
 import com.qtick.mis.repository.mongo.DashboardSnapshotRepository;
 import com.qtick.mis.security.TenantContext;
 import com.qtick.mis.security.TenantContextHolder;
@@ -48,9 +50,12 @@ public class DashboardService {
     
     @Autowired
     private ClientRepository clientRepository;
-    
+
     @Autowired
     private DashboardMapper dashboardMapper;
+
+    @Autowired
+    private DayQReportRepository dayQReportRepository;
     
     /**
      * Get dashboard summary with KPI calculations and comparison logic
@@ -253,6 +258,40 @@ public class DashboardService {
         }
         
         return businessDetails;
+    }
+
+    public BusinessViewCountDto getBusinessViewCount(LocalDate startDate, LocalDate endDate) {
+        TenantContext context = TenantContextHolder.getContext();
+        Long bizId = context.getBizId();
+
+        logger.info("Getting business view count for bizId: {}, period: {} to {}", bizId, startDate, endDate);
+
+        int startPeriod = toPeriodId(startDate);
+        int endPeriod = toPeriodId(endDate);
+
+        Object[] stats = dayQReportRepository.aggregateStats(bizId, "D", startPeriod, endPeriod);
+
+        BusinessViewCountDto dto = new BusinessViewCountDto();
+        dto.setBizId(bizId);
+        dto.setStartDate(startDate);
+        dto.setEndDate(endDate);
+
+        if (stats != null) {
+            dto.setServed(((Number) stats[0]).intValue());
+            dto.setSales(stats[1] != null ? ((Number) stats[1]).doubleValue() : 0.0);
+            dto.setNetSales(stats[2] != null ? ((Number) stats[2]).doubleValue() : 0.0);
+            dto.setQueued(((Number) stats[3]).intValue());
+            dto.setMissed(((Number) stats[4]).intValue());
+            dto.setLeftQ(((Number) stats[5]).intValue());
+            dto.setCancelled(((Number) stats[6]).intValue());
+            dto.setViewCount(((Number) stats[7]).intValue());
+        }
+
+        return dto;
+    }
+
+    private int toPeriodId(LocalDate date) {
+        return Integer.parseInt(date.format(java.time.format.DateTimeFormatter.BASIC_ISO_DATE));
     }
     
     /**
